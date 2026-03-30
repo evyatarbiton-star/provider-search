@@ -3,7 +3,7 @@ export default {
   content: [
     './index.html',
     './src/**/*.{ts,tsx}',
-    './node_modules/glow-ds/src/**/*.{ts,tsx}',
+    './src/vendor/**/*.{ts,tsx,js}',
   ],
   theme: {
     extend: {

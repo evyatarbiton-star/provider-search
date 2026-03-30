@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: "Founders Grotesk", -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #ffffff;
+    color: #000000;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #ededed; border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: #e0e0e0; }
+  ::-webkit-scrollbar-corner { background: transparent; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* NavBar mobile padding fix — container query can't target itself */
+@media (max-width: 1199px) {
+  .glow-navbar-root {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+
+/* Leaflet price pin markers — remove default div-icon sizing */
+.leaflet-marker-icon {
+  background: none !important;
+  border: none !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+/* Wider dropdown panels for compound select in Experiment 3 */
+.compound-select-wide > div > div[style*="position: absolute"] {
+  min-width: 220px !important;
+}

@@ -3917,8 +3917,7 @@ const Ta = ({
 }, Ia = {
   lower: { label: "Lower cost", chipColor: "success", Icon: Ta },
   typical: { label: "Typical cost", chipColor: "info", Icon: Da },
-  higher: { label: "Higher cost", chipColor: "error", Icon: La },
-  unknown: { label: "Unknown cost est", chipColor: "neutral", Icon: _a }
+  higher: { label: "Higher cost", chipColor: "error", Icon: La }
 }, et = Re.default, tt = Re.display, rt = P.regular, nt = P.medium, ot = e.neutral.text.DEFAULT, Rt = e.neutral.text.dark, Aa = e.neutral.text.light, Wt = parseInt(V.xxs);
 function dn({
   cost: r,

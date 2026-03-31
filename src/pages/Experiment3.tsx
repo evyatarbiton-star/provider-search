@@ -211,7 +211,6 @@ const PROVIDERS_CONNECTED = [
     rating: 4.1,
     reviewCount: 156,
     cost: '$1,400–$3,200',
-    costLevel: 'unknown' as const,
     costLabel: 'Call to verify out-of-pocket cost',
     nextAppointmentLabel: 'Next appointment',
     nextAppointmentDate: 'Tomorrow, May 8',
@@ -227,7 +226,6 @@ const PROVIDERS_CONNECTED = [
     rating: 3.7,
     reviewCount: 142,
     cost: '$1,100–$2,800',
-    costLevel: 'unknown' as const,
     costLabel: 'Call to verify out-of-pocket cost',
   },
 ]

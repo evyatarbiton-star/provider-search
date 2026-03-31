@@ -1249,10 +1249,16 @@ export function Experiment11() {
   const searchBarRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    // Only clear container shadow when fully closing (not when switching segments)
+    if (!activeSegment && searchBarRef.current) {
+      searchBarRef.current.style.boxShadow = 'none'
+      searchBarRef.current.style.transform = 'scale(1)'
+    }
     if (!activeSegment) return
     const handleClick = (e: MouseEvent) => {
       if (searchBarRef.current && !searchBarRef.current.contains(e.target as Node)) {
         setActiveSegment(null)
+        setHoveredSegment(null)
       }
     }
     document.addEventListener('mousedown', handleClick)
@@ -1305,15 +1311,16 @@ export function Experiment11() {
           }}>
           <div
             ref={searchBarRef}
-            onMouseEnter={(e) => { if (!activeSegment) e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,0,0,0.14)'; e.currentTarget.style.transform = 'scale(1.01)' }}
-            onMouseLeave={(e) => { if (!activeSegment) e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'scale(1)' }}
+            onClick={(e) => { if (e.target === e.currentTarget && activeSegment) { setActiveSegment(null); setHoveredSegment(null) } }}
+            onMouseEnter={(e) => { if (!activeSegment) { e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,0,0,0.14)'; e.currentTarget.style.transform = 'scale(1.01)' } }}
+            onMouseLeave={(e) => { if (!activeSegment) { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'scale(1)' } }}
             style={{
             display: 'flex', alignItems: 'center', gap: 0,
             border: `1px solid ${BORDER_STRONG}`,
             borderRadius: RADIUS_FULL,
             overflow: 'visible',
             boxShadow: 'none',
-            transition: 'box-shadow 0.2s, border-color 0.2s, transform 0.2s',
+            transition: 'box-shadow 0.2s, border-color 0.2s, background 0.2s, transform 0.2s',
             position: 'relative',
             background: activeSegment ? BG_SUBTLE : BG_WHITE,
             padding: 4,
@@ -1341,10 +1348,11 @@ export function Experiment11() {
                     autoFocus
                     value={searchQuery}
                     onChange={(e) => { setSearchQuery(e.target.value); if (e.target.value) setSearchCleared(false) }}
-                    onBlur={() => setTimeout(() => setActiveSegment(null), 200)}
+                    onBlur={() => setTimeout(() => setActiveSegment(prev => prev === 'service' ? null : prev), 200)}
                     style={{
                       border: 'none', outline: 'none', background: 'transparent', width: '100%',
                       fontFamily: FONT, fontWeight: W_REGULAR, fontSize: fontSizes[14], color: TEXT_DEFAULT,
+                      lineHeight: '18px', height: 18, padding: 0, margin: 0,
                     }}
                     placeholder="Provider, specialty, procedure..."
                   />
@@ -1458,7 +1466,7 @@ export function Experiment11() {
                 background: activeSegment === 'plan' ? BG_WHITE : hoveredSegment === 'plan' && !activeSegment ? '#f7f7f7' : 'transparent',
                 borderRadius: RADIUS_FULL,
                 transition: 'background 0.15s, box-shadow 0.15s',
-                boxShadow: activeSegment === 'plan' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+                boxShadow: activeSegment === 'plan' && hoveredSegment === 'plan' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
               }}
             >
               <div style={{ fontFamily: FONT, fontWeight: W_MEDIUM, fontSize: fontSizes[12], color: TEXT_DEFAULT, lineHeight: '14px', marginBottom: 2 }}>
@@ -1474,7 +1482,7 @@ export function Experiment11() {
                   boxShadow: '0 8px 24px rgba(0,0,0,0.12)', padding: SPACE_XS, minWidth: 220, zIndex: 9000,
                 }}>
                   {planOptions.map(opt => (
-                    <div key={opt.value} onClick={() => { setPlan(opt.value); setActiveSegment(null) }} style={{
+                    <div key={opt.value} onClick={() => { setPlan(opt.value); setActiveSegment(null); setIsLoading(true); setTimeout(() => setIsLoading(false), 2000) }} style={{
                       padding: `${SPACE_XXS}px ${SPACE_XXS}px`, cursor: 'pointer', borderRadius: 6,
                       fontFamily: FONT, fontSize: fontSizes[14], color: TEXT_DEFAULT,
                       display: 'flex', alignItems: 'center', gap: SPACE_XXS,
@@ -1502,7 +1510,7 @@ export function Experiment11() {
                 background: activeSegment === 'network' ? BG_WHITE : hoveredSegment === 'network' && !activeSegment ? '#f7f7f7' : 'transparent',
                 borderRadius: RADIUS_FULL,
                 transition: 'background 0.15s, box-shadow 0.15s',
-                boxShadow: activeSegment === 'network' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+                boxShadow: activeSegment === 'network' && hoveredSegment === 'network' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
               }}
             >
               <div style={{ fontFamily: FONT, fontWeight: W_MEDIUM, fontSize: fontSizes[12], color: TEXT_DEFAULT, lineHeight: '14px', marginBottom: 2 }}>
@@ -1519,7 +1527,7 @@ export function Experiment11() {
                   boxShadow: '0 8px 24px rgba(0,0,0,0.12)', padding: SPACE_XS, minWidth: 220, zIndex: 9000,
                 }}>
                   {networkOptions.map(opt => (
-                    <div key={opt.value} onClick={() => { setNetwork(opt.value); setActiveSegment(null) }} style={{
+                    <div key={opt.value} onClick={() => { setNetwork(opt.value); setActiveSegment(null); setIsLoading(true); setTimeout(() => setIsLoading(false), 2000) }} style={{
                       padding: `${SPACE_XXS}px ${SPACE_XXS}px`, cursor: 'pointer', borderRadius: 6,
                       fontFamily: FONT, fontSize: fontSizes[14], color: TEXT_DEFAULT,
                       display: 'flex', alignItems: 'center', gap: SPACE_XXS,
@@ -1547,7 +1555,7 @@ export function Experiment11() {
                 background: activeSegment === 'location' ? BG_WHITE : hoveredSegment === 'location' && !activeSegment ? '#f7f7f7' : 'transparent',
                 borderRadius: RADIUS_FULL,
                 transition: 'background 0.15s, box-shadow 0.15s',
-                boxShadow: activeSegment === 'location' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+                boxShadow: activeSegment === 'location' && hoveredSegment === 'location' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
               }}
             >
               <div style={{ fontFamily: FONT, fontWeight: W_MEDIUM, fontSize: fontSizes[12], color: TEXT_DEFAULT, lineHeight: '14px', marginBottom: 2 }}>
@@ -1568,7 +1576,7 @@ export function Experiment11() {
                     { icon: <HospitalBuildingLine size="sm" color={TEXT_DEFAULT} />, label: 'Work', sub: 'New York, NY 10001' },
                     { icon: <LocationLine size="sm" color={TEXT_DEFAULT} />, label: 'Current location', sub: 'Detect automatically' },
                   ].map(loc => (
-                    <div key={loc.label} onClick={() => setActiveSegment(null)} style={{
+                    <div key={loc.label} onClick={() => { setActiveSegment(null); setIsLoading(true); setTimeout(() => setIsLoading(false), 2000) }} style={{
                       padding: `${SPACE_XXS}px ${SPACE_XXS}px`, cursor: 'pointer', borderRadius: 6,
                       display: 'flex', alignItems: 'center', gap: SPACE_XXS,
                     }}>
@@ -1846,7 +1854,7 @@ export function Experiment11() {
       {/* ── Dark overlay when a segment is active ── */}
       {activeSegment && (
         <div
-          onClick={() => setActiveSegment(null)}
+          onClick={() => { setActiveSegment(null); setHoveredSegment(null) }}
           style={{
             position: 'fixed', inset: 0, zIndex: 45,
             background: 'rgba(0,0,0,0.2)',
@@ -1922,8 +1930,8 @@ export function Experiment11() {
                   specialty={provider.specialty}
                   photoUrl={provider.photoUrl}
                   providerType={provider.providerType}
-                  networkTier={provider.networkTier}
-                  networkLabel={provider.networkLabel}
+                  networkTier={network as any}
+                  networkLabel={networkOptions.find(o => o.value === network)?.label}
                   distance={provider.distance}
                   address={provider.address}
                   rating={provider.rating}
@@ -1972,6 +1980,114 @@ export function Experiment11() {
             />
           )}
 
+          {/* ── Related Benefits (Point Solutions) ── */}
+          {!isLoading && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: SPACE_S, marginTop: SPACE_S, paddingTop: SPACE_L, borderTop: `1px solid ${BORDER_LIGHT}` }}>
+              <h3 style={{
+                fontFamily: FONT, fontWeight: W_MEDIUM,
+                fontSize: fontSizes[16], lineHeight: '19px',
+                color: TEXT_DEFAULT, margin: 0,
+              }}>
+                You may also have access to
+              </h3>
+
+              {/* Point Solution Card */}
+              <div style={{
+                border: `1px solid ${BORDER_STRONG}`,
+                borderRadius: SPACE_L,
+                padding: SPACE_S,
+                background: BG_WHITE,
+                display: 'flex', flexDirection: 'column', gap: SPACE_M,
+              }}>
+                {/* Top section: Logo + Fav */}
+                <div style={{
+                  display: 'flex', flexDirection: 'column', gap: SPACE_S,
+                  borderBottom: `1px solid ${BORDER_STRONG}`,
+                  paddingBottom: SPACE_XS,
+                }}>
+                  {/* Logo area */}
+                  <div style={{
+                    background: '#e5fff1',
+                    borderRadius: RADIUS_XS,
+                    height: 120,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    position: 'relative',
+                    overflow: 'hidden',
+                  }}>
+                    <img
+                      src="http://localhost:3845/assets/8743208f2065f767448ed931a35d9fbd1aa07c59.png"
+                      alt="Hinge Health"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }}
+                    />
+                    {/* Fav button */}
+                    <button style={{
+                      position: 'absolute', top: SPACE_S, right: SPACE_S,
+                      width: 32, height: 32,
+                      background: BG_WHITE, border: 'none', borderRadius: RADIUS_FULL,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: 'pointer',
+                      boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+                    }}>
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M10 17.5s-6.5-4.35-6.5-8.75a3.5 3.5 0 0 1 6.5-1.8 3.5 3.5 0 0 1 6.5 1.8c0 4.4-6.5 8.75-6.5 8.75z" stroke={TEXT_DARK} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </button>
+                  </div>
+                  {/* Title */}
+                  <p style={{
+                    fontFamily: FONT_DISPLAY, fontWeight: W_MEDIUM,
+                    fontSize: fontSizes[20], lineHeight: '24px',
+                    color: TEXT_DEFAULT, margin: 0,
+                  }}>
+                    Virtual physical therapy
+                  </p>
+                </div>
+
+                {/* Bottom section: Benefit info */}
+                <div style={{
+                  display: 'flex', flexDirection: 'column', gap: SPACE_XS,
+                  flex: 1,
+                }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <p style={{
+                      fontFamily: FONT, fontWeight: W_MEDIUM,
+                      fontSize: fontSizes[16], lineHeight: '19px',
+                      color: TEXT_DEFAULT, margin: 0,
+                    }}>
+                      This benefit is fully covered
+                    </p>
+                    <p style={{
+                      fontFamily: FONT, fontWeight: W_REGULAR,
+                      fontSize: fontSizes[14], lineHeight: '17px',
+                      color: TEXT_DARK, margin: 0,
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>
+                      Reduce your pain with a plan that's personalized for your needs, goals, and ability.
+                    </p>
+                  </div>
+                  <p style={{
+                    fontFamily: FONT, fontWeight: W_REGULAR,
+                    fontSize: fontSizes[14], lineHeight: '17px',
+                    color: TEXT_DEFAULT, margin: 0,
+                  }}>
+                    Provided by Hinge Health
+                  </p>
+                </div>
+
+                {/* Learn more button */}
+                <button style={{
+                  width: '100%', height: 36,
+                  background: TEXT_DEFAULT, color: BG_WHITE,
+                  border: 'none', borderRadius: RADIUS_XXS,
+                  fontFamily: FONT, fontWeight: W_MEDIUM,
+                  fontSize: fontSizes[14], lineHeight: '18px',
+                  cursor: 'pointer',
+                }}>
+                  Learn more
+                </button>
+              </div>
+            </div>
+          )}
 
         </div>}
       </div>

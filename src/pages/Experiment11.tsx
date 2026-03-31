@@ -1201,6 +1201,28 @@ function createPriceIcon(price: string, costLevel?: string) {
   })
 }
 
+function MapFitProviders({ providers }: { providers: any[] }) {
+  const map = useMap()
+  useEffect(() => {
+    const fit = () => {
+      map.invalidateSize()
+      const points: [number, number][] = providers.map(p => {
+        const addr = p.address || ''
+        const found = Object.entries(PROVIDER_COORDS).find(([key]) => addr.includes(key.split(',')[0]))
+        return (found ? found[1] : [40.7550, -73.9750]) as [number, number]
+      })
+      if (points.length > 0) {
+        const bounds = L.latLngBounds(points)
+        map.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 })
+      }
+    }
+    const t1 = setTimeout(fit, 100)
+    const t2 = setTimeout(fit, 400)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
+  }, [map, providers])
+  return null
+}
+
 function MapZoomControls() {
   const map = useMap()
   return (
@@ -1237,7 +1259,7 @@ export function Experiment11() {
     setIsLoading(true)
     setTimeout(() => {
       setIsLoading(false)
-    }, 2500)
+    }, 4000)
   }
 
   const [activeTab, setActiveTab] = useState('find-care')
@@ -1275,7 +1297,7 @@ export function Experiment11() {
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
   const toggleFilter = (name: string) => setOpenFilter(openFilter === name ? null : name)
   const [showCostModal, setShowCostModal] = useState(false)
-  const [costVariant, setCostVariant] = useState<'compact' | 'expanded'>('compact')
+  const [sidebarSide, setSidebarSide] = useState<'right' | 'left'>('left')
   const [showVariantPicker, setShowVariantPicker] = useState(false)
   const [bookingProvider, setBookingProvider] = useState<typeof PROVIDERS_CONNECTED[0] | null>(null)
   const [bookingLocation, setBookingLocation] = useState('loc1')
@@ -1404,7 +1426,7 @@ export function Experiment11() {
                           setTimeout(() => {
                             setIsLoading(false)
                             setScenarioId('copay-flat')
-                          }, 2000)
+                          }, 4000)
                         }}
                         style={{
                           display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
@@ -1433,7 +1455,7 @@ export function Experiment11() {
                           setSearchQuery(proc)
                           setActiveSegment(null)
                           setIsLoading(true)
-                          setTimeout(() => { setIsLoading(false); setScenarioId('coinsurance-range') }, 2000)
+                          setTimeout(() => { setIsLoading(false); setScenarioId('coinsurance-range') }, 4000)
                         }}
                         style={{
                           fontFamily: FONT, fontWeight: W_MEDIUM, fontSize: fontSizes[14], color: TEXT_DEFAULT,
@@ -1482,7 +1504,7 @@ export function Experiment11() {
                   boxShadow: '0 8px 24px rgba(0,0,0,0.12)', padding: SPACE_XS, minWidth: 220, zIndex: 9000,
                 }}>
                   {planOptions.map(opt => (
-                    <div key={opt.value} onClick={() => { setPlan(opt.value); setActiveSegment(null); setIsLoading(true); setTimeout(() => setIsLoading(false), 2000) }} style={{
+                    <div key={opt.value} onClick={() => { setPlan(opt.value); setActiveSegment(null); setIsLoading(true); setTimeout(() => setIsLoading(false), 4000) }} style={{
                       padding: `${SPACE_XXS}px ${SPACE_XXS}px`, cursor: 'pointer', borderRadius: 6,
                       fontFamily: FONT, fontSize: fontSizes[14], color: TEXT_DEFAULT,
                       display: 'flex', alignItems: 'center', gap: SPACE_XXS,
@@ -1527,7 +1549,7 @@ export function Experiment11() {
                   boxShadow: '0 8px 24px rgba(0,0,0,0.12)', padding: SPACE_XS, minWidth: 220, zIndex: 9000,
                 }}>
                   {networkOptions.map(opt => (
-                    <div key={opt.value} onClick={() => { setNetwork(opt.value); setActiveSegment(null); setIsLoading(true); setTimeout(() => setIsLoading(false), 2000) }} style={{
+                    <div key={opt.value} onClick={() => { setNetwork(opt.value); setActiveSegment(null); setIsLoading(true); setTimeout(() => setIsLoading(false), 4000) }} style={{
                       padding: `${SPACE_XXS}px ${SPACE_XXS}px`, cursor: 'pointer', borderRadius: 6,
                       fontFamily: FONT, fontSize: fontSizes[14], color: TEXT_DEFAULT,
                       display: 'flex', alignItems: 'center', gap: SPACE_XXS,
@@ -1576,7 +1598,7 @@ export function Experiment11() {
                     { icon: <HospitalBuildingLine size="sm" color={TEXT_DEFAULT} />, label: 'Work', sub: 'New York, NY 10001' },
                     { icon: <LocationLine size="sm" color={TEXT_DEFAULT} />, label: 'Current location', sub: 'Detect automatically' },
                   ].map(loc => (
-                    <div key={loc.label} onClick={() => { setActiveSegment(null); setIsLoading(true); setTimeout(() => setIsLoading(false), 2000) }} style={{
+                    <div key={loc.label} onClick={() => { setActiveSegment(null); setIsLoading(true); setTimeout(() => setIsLoading(false), 4000) }} style={{
                       padding: `${SPACE_XXS}px ${SPACE_XXS}px`, cursor: 'pointer', borderRadius: 6,
                       display: 'flex', alignItems: 'center', gap: SPACE_XXS,
                     }}>
@@ -1865,9 +1887,10 @@ export function Experiment11() {
 
       {/* ── Main Content ── */}
       <div style={{
-        maxWidth: 1280, margin: '0 auto',
-        display: 'flex', flexDirection: 'row', gap: 104,
-        padding: showSidebar ? `${SPACE_XXL}px ${SPACE_XL}px` : `${SPACE_S}px`,
+        maxWidth: viewMode === 'map' ? '100%' : 1280, margin: '0 auto',
+        display: 'flex', flexDirection: sidebarSide === 'left' && viewMode !== 'map' ? 'row-reverse' : 'row', gap: viewMode === 'map' ? 0 : 104,
+        padding: viewMode === 'map' ? 0 : showSidebar ? `${SPACE_XXL}px ${SPACE_XL}px` : `${SPACE_S}px`,
+        position: 'relative', zIndex: 1,
       }}>
 
         {/* ── Left: Results ── */}
@@ -1897,7 +1920,8 @@ export function Experiment11() {
             </div>
           )}
 
-          {/* Title + Sort row */}
+          {/* Title + Sort row (hidden in map view) */}
+          {viewMode === 'list' && (
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             marginBottom: SPACE_L, gap: SPACE_XS,
@@ -1914,58 +1938,130 @@ export function Experiment11() {
               Sort by distance
             </Button>
           </div>
+          )}
 
-          {/* Provider Cards */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: SPACE_L }}>
-            {isLoading ? (
-              Array.from({ length: 4 }).map((_, i) => (
-                <ProviderCard key={i} layout="responsive" loading />
-              ))
-            ) : (
-              providers.map((provider, i) => (
-                <ProviderCard
-                  key={i}
-                  layout="responsive"
-                  name={provider.name}
-                  specialty={provider.specialty}
-                  photoUrl={provider.photoUrl}
-                  providerType={provider.providerType}
-                  networkTier={network as any}
-                  networkLabel={networkOptions.find(o => o.value === network)?.label}
-                  distance={provider.distance}
-                  address={provider.address}
-                  rating={provider.rating}
-                  reviewCount={provider.reviewCount}
-                  cost={provider.cost}
-                  costLevel={provider.costLevel}
-                  costLabel={provider.costLabel}
-                  nextAppointmentLabel={provider.nextAppointmentLabel}
-                  nextAppointmentDate={provider.nextAppointmentDate}
-                  onCallClick={() => {}}
-                  onBookClick={() => setBookingProvider(provider)}
-                  onClick={() => {}}
-                />
-              ))
-            )}
-          </div>
-
-          {/* Pagination info */}
-          <div style={{
-            marginTop: SPACE_XL, paddingTop: SPACE_L,
-            borderTop: `1px solid ${BORDER_LIGHT}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <span style={{
-              fontFamily: FONT, fontWeight: W_REGULAR,
-              fontSize: fontSizes[14], color: TEXT_LIGHT,
+          {viewMode === 'map' ? (
+            /* ── Map View ── */
+            <div style={{
+              borderRadius: 0,
+              height: 'calc(100vh - 160px)', minHeight: 500,
+              position: 'relative',
+              overflow: 'hidden',
             }}>
-              Showing 1–6 of 89 results
-            </span>
-          </div>
+              <div style={{
+                width: '100%', height: '100%',
+                filter: isLoading ? 'blur(6px) saturate(0.7)' : 'none',
+                transition: 'filter 0.4s ease',
+              }}>
+              <MapContainer
+                center={[40.7550, -73.9750]}
+                zoom={13}
+                style={{ width: '100%', height: '100%' }}
+                zoomControl={false}
+                attributionControl={false}
+              >
+                <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
+                <MapFitProviders providers={providers} />
+                <MapZoomControls />
+                {!isLoading && providers.map((provider, i) => {
+                  const addr = provider.address || ''
+                  const coords = Object.entries(PROVIDER_COORDS).find(([key]) => addr.includes(key.split(',')[0]))?.[1]
+                    || [40.7580 + (Math.random() - 0.5) * 0.02, -73.9780 + (Math.random() - 0.5) * 0.02]
+                  return (
+                    <Marker
+                      key={i}
+                      position={coords as [number, number]}
+                      icon={createPriceIcon(provider.cost || '—', provider.costLevel)}
+                    >
+                      <Popup maxWidth={340} minWidth={320} className="provider-map-popup" autoPan={true} autoPanPadding={[50, 50]} closeButton={false}>
+                        <div style={{ margin: -1 }}>
+                          <ProviderCard
+                            layout="vertical"
+                            name={provider.name}
+                            specialty={provider.specialty}
+                            photoUrl={provider.photoUrl}
+                            providerType={provider.providerType}
+                            networkTier={network as any}
+                            networkLabel={networkOptions.find(o => o.value === network)?.label}
+                            distance={provider.distance}
+                            address={provider.address}
+                            rating={provider.rating}
+                            reviewCount={provider.reviewCount}
+                            cost={provider.cost}
+                            costLevel={provider.costLevel}
+                            costLabel={provider.costLabel}
+                            nextAppointmentLabel={provider.nextAppointmentLabel}
+                            nextAppointmentDate={provider.nextAppointmentDate}
+                            onCallClick={() => {}}
+                            onBookClick={() => setBookingProvider(provider)}
+                            onClick={() => {}}
+                          />
+                        </div>
+                      </Popup>
+                    </Marker>
+                  )
+                })}
+              </MapContainer>
+              </div>
+              {/* Loading overlay: blur + pulsing opacity */}
+              {isLoading && <div className="map-loading-overlay" />}
+            </div>
+          ) : (
+            /* ── List View ── */
+            <>
+              {/* Provider Cards */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: SPACE_L }}>
+                {isLoading ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <ProviderCard key={i} layout="responsive" loading />
+                  ))
+                ) : (
+                  providers.map((provider, i) => (
+                    <ProviderCard
+                      key={i}
+                      layout="responsive"
+                      name={provider.name}
+                      specialty={provider.specialty}
+                      photoUrl={provider.photoUrl}
+                      providerType={provider.providerType}
+                      networkTier={network as any}
+                      networkLabel={networkOptions.find(o => o.value === network)?.label}
+                      distance={provider.distance}
+                      address={provider.address}
+                      rating={provider.rating}
+                      reviewCount={provider.reviewCount}
+                      cost={provider.cost}
+                      costLevel={provider.costLevel}
+                      costLabel={provider.costLabel}
+                      nextAppointmentLabel={provider.nextAppointmentLabel}
+                      nextAppointmentDate={provider.nextAppointmentDate}
+                      onCallClick={() => {}}
+                      onBookClick={() => setBookingProvider(provider)}
+                      onClick={() => {}}
+                    />
+                  ))
+                )}
+              </div>
+
+              {/* Pagination info */}
+              <div style={{
+                marginTop: SPACE_XL, paddingTop: SPACE_L,
+                borderTop: `1px solid ${BORDER_LIGHT}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <span style={{
+                  fontFamily: FONT, fontWeight: W_REGULAR,
+                  fontSize: fontSizes[14], color: TEXT_LIGHT,
+                }}>
+                  Showing 1–6 of 89 results
+                </span>
+              </div>
+            </>
+          )}
         </div>
 
-        {/* ── Right: Cost & Plan Sidebar ── */}
-        {showSidebar && <div style={{ width: SIDEBAR_W, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: SPACE_S }}>
+        {/* ── Right: Cost & Plan Sidebar (hidden in map view) ── */}
+        {showSidebar && viewMode === 'list' && <div style={{ width: SIDEBAR_W, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: SPACE_S }}>
 
           {/* Plan & Network moved to unified search bar */}
 
@@ -1976,13 +2072,13 @@ export function Experiment11() {
               onLearnMore={() => setShowCostModal(true)}
               onConnect={() => setShowConnectModal(true)}
               headerSlot={undefined}
-              expanded={costVariant === 'expanded'}
+              expanded={false}
             />
           )}
 
           {/* ── Related Benefits (Point Solutions) ── */}
           {!isLoading && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: SPACE_S, marginTop: SPACE_S, paddingTop: SPACE_L, borderTop: `1px solid ${BORDER_LIGHT}` }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: SPACE_S, marginTop: SPACE_L, paddingTop: SPACE_XL, borderTop: `1px solid ${BORDER_LIGHT}` }}>
               <h3 style={{
                 fontFamily: FONT, fontWeight: W_MEDIUM,
                 fontSize: fontSizes[16], lineHeight: '19px',
@@ -2019,19 +2115,6 @@ export function Experiment11() {
                       alt="Hinge Health"
                       style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }}
                     />
-                    {/* Fav button */}
-                    <button style={{
-                      position: 'absolute', top: SPACE_S, right: SPACE_S,
-                      width: 32, height: 32,
-                      background: BG_WHITE, border: 'none', borderRadius: RADIUS_FULL,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      cursor: 'pointer',
-                      boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-                    }}>
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path d="M10 17.5s-6.5-4.35-6.5-8.75a3.5 3.5 0 0 1 6.5-1.8 3.5 3.5 0 0 1 6.5 1.8c0 4.4-6.5 8.75-6.5 8.75z" stroke={TEXT_DARK} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </button>
                   </div>
                   {/* Title */}
                   <p style={{
@@ -2401,24 +2484,24 @@ export function Experiment11() {
             minWidth: 220, overflow: 'hidden',
           }}>
             {[
-              { id: 'compact' as const, label: 'Compact', desc: 'With "How we calculated" link' },
-              { id: 'expanded' as const, label: 'Expanded', desc: 'Full cost breakdown inline' },
+              { id: 'right' as const, label: 'Sidebar Right', desc: 'Cost box on the right side' },
+              { id: 'left' as const, label: 'Sidebar Left', desc: 'Cost box on the left side' },
             ].map((v) => (
               <button
                 key={v.id}
-                onClick={() => { setCostVariant(v.id); setShowVariantPicker(false) }}
+                onClick={() => { setSidebarSide(v.id); setShowVariantPicker(false) }}
                 style={{
                   display: 'flex', flexDirection: 'column', gap: 2,
                   width: '100%', textAlign: 'left',
                   padding: `${SPACE_XS}px ${SPACE_S}px`,
-                  background: costVariant === v.id ? sc.neutral.surface.extraSubtle : 'transparent',
+                  background: sidebarSide === v.id ? sc.neutral.surface.extraSubtle : 'transparent',
                   border: 'none', cursor: 'pointer',
                 }}
               >
                 <span style={{
                   fontFamily: FONT, fontWeight: W_MEDIUM, fontSize: fontSizes[14], color: TEXT_DEFAULT,
                 }}>
-                  {costVariant === v.id ? `✓ ${v.label}` : v.label}
+                  {sidebarSide === v.id ? `✓ ${v.label}` : v.label}
                 </span>
                 <span style={{
                   fontFamily: FONT, fontWeight: W_REGULAR, fontSize: fontSizes[12], color: TEXT_LIGHT,

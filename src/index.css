@@ -29,6 +29,20 @@
   50% { opacity: 0.4; }
 }
 
+@keyframes mapLoadPulse {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.6; }
+}
+
+.map-loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.5);
+  animation: mapLoadPulse 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
 /* NavBar mobile padding fix — container query can't target itself */
 @media (max-width: 1199px) {
   .glow-navbar-root {
@@ -43,6 +57,31 @@
   border: none !important;
   width: auto !important;
   height: auto !important;
+}
+
+/* Map popup with ProviderCard */
+.provider-map-popup {
+  max-width: none !important;
+}
+.provider-map-popup .leaflet-popup-content-wrapper {
+  padding: 0 !important;
+  border-radius: 16px !important;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+}
+.provider-map-popup .leaflet-popup-content {
+  margin: 0 !important;
+  width: 320px !important;
+  line-height: normal !important;
+}
+.provider-map-popup .leaflet-popup-content p {
+  margin: 0 !important;
+}
+.provider-map-popup .leaflet-popup-tip-container {
+  display: none;
+}
+.provider-map-popup .leaflet-popup-close-button {
+  display: none !important;
 }
 
 /* Wider dropdown panels for compound select in Experiment 3 */
